@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple client</title>
+  <style>
+  ._all {height:98%;background-color: white;position: absolute;width: 98%;}
+  ._dataa {background-color: white;overflow:auto;margin: 4px;float:left;}
+  ._datab {background-color: white;overflow:auto;margin: 4px;}
+  ._log {height:15%;background-color: #d3e9e9;overflow:auto;margin: 4px;}
+  ._cookie {height:12%;background-color: #f2f2f2;overflow:auto;margin: 4px;} 
+  ._title {background-color:silver;padding: 2px;margin: 4px;}
+  ._b {padding: 0 10px 0 10px;}
+  </style>
+  <script type="text/javascript">
+
+    var ws;
+    var mac="MO0004A3F90000"; // change here    
+	
+    function init() {
+
+      // Connect to Web Socket
+//      ws = new WebSocket("ws://localhost:9001/");
+      ws = new WebSocket("ws://192.168.0.1:80/");
+//      ws = new WebSocket("ws://192.168.1.159:9001/");
+//      ws = new WebSocket("ws://in.sen.se/websocket");
+
+      // Set event handlers.
+      ws.onopen = function() {
+        output("onopen");
+        console.log(ws);
+      };
+      
+      ws.onmessage = function(e) {
+        // e.data contains received string.
+        output("onmessage: " + e.data);
+		//verifica se cookie
+		var c=e.data.substr(0,7);
+		if (c=='COOKIE1')
+		  outputcookie(1, e.data.substr(7));
+		if (c=='COOKIE2')
+		  outputcookie(2, e.data.substr(7));
+		if (c=='COOKIE3')
+		  outputcookie(3, e.data.substr(7));
+		if (c=='COOKIE4')
+		  outputcookie(4, e.data.substr(7));
+		
+		
+      };
+      
+      ws.onclose = function() {
+        output("onclose");
+      };
+
+      ws.onerror = function(e) {
+        output("onerror");
+        console.log(e)
+      };
+
+    }
+    
+    function onSubmit() {
+      var input = document.getElementById("input");
+      // You can send message to the Web Socket using ws.send.
+      ws.send(input.value);
+      output("send: " + input.value);
+      input.value = "";
+      input.focus();
+    }
+    function onSubmitb( b ) {
+    //test mother simulation
+	  var value='';
+	  var value1='';
+	  switch (b) {
+	  case 1:
+	   value='{"resource" : "auth", "method" : "post", "type" : "gateway", "body" : {"serial" : "MO0004A3F9B33B", "firmware" : "414"}}'; break;
+	  case 2:
+	   value='{"resource" : "login", "method" : "post", "body" : {"encToken" : "7911671779F61624B692E3D5BB848C183DCCCE6B"}}'; break;
+	  case 3:
+	   value='{"resource" : "registration", "method" : "get"}'; break;
+	  case 4:
+	   value='{"resource" : "events", "method" : "post", "body" : [{"timestamp" : "2006-01-01 00:00:14", "feed_type" : "99", "value" : "Nb Cookie : Reset_RF"}]}'; break;
+	  case 5:
+	   value='{"resource" : "planning", "method" : "get"}'; break;
+	  case 6:
+	   value='{"resource" : "state", "method" : "get"}'; break;
+	  case 7:
+	   value='{"resource" : "library/resident", "method" : "get", "body" : {"version" : "103"}}'; break;
+	  case 8:
+	   value='{"resource" : "library/sound", "method" : "get", "body" : {"version" : "102"}}'; break;
+	  case 9:
+	   value='{"resource" : "events", "method" : "post", "body" : [{"timestamp" : "2018-03-22 22:01:54", "feed_type" : "6", "value" : "119"}]}'; break;
+	  case 10:
+	   value='{"resource" : "events", "method" : "post", "body" : [{"timestamp" : "2018-03-22 22:00:04", "feed_type" : "6", "value" : "5000"}]}';
+	   value1='{"resource" : "events", "method" : "post", "body" : [{"timestamp" : "2018-03-22 22:00:04", "feed_type" : "6", "value" : "5527"}]}'; break;  
+	  case 11:
+	   value='{"resource" : "events", "method" : "post", "body" : [{"node" : "206B121A", "timestamp" : "2018-03-24 09:33:32", "feed_type" : "3", "signal" : "-41", "value" : "149,6,1549"}]}'; break;  
+	  case 12:
+	   value='{"resource" : "events", "method" : "post", "body" : [{"node" : "6FEC200D", "timestamp" : "2016-03-25 06:44:40", "feed_type" : "5", "signal" : "-62", "value" : "7669"}]}'; break;  
+	  case 13:
+	   value='{"resource" : "events", "method" : "post", "body" : [{"node" : "65EB0E1C", "timestamp" : "2018-03-24 09:40:08", "feed_type" : "1", "signal" : "-44", "value" : "2"}]}'; break;  
+	  case 14:
+	   value='{"resource" : "events", "method" : "post", "body" : [{"node" : "AA81082C", "timestamp" : "2018-03-24 09:38:38", "feed_type" : "4", "signal" : "-39", "value" : "1540"}]}'; break;  
+	  case 100:
+       var rl = document.getElementById("rightLed").value;	  
+       var ll = document.getElementById("leftLed").value;	  
+	   value='{"body": {"smileLed": "0,255,0", "rightLed": "'+rl+'",  "leftLed": "'+ll+'"}, "type": "gateway", "resource": "state", "method": "post", "auth": "'+mac+'"}'; break;  
+//	  case 110:
+//       var t = document.getElementById("token").value;	  
+//	   value='{"token": "'+t+'"}, "resource": "login", "method": "get"}'; break;  
+	  default:
+	   break;
+	  }
+      ws.send(value);
+      output("send: " + value);	  
+	  if (value1!=''){
+	    ws.send(value1);
+        output("send: " + value1);
+	  }
+    }
+
+
+    
+    function onCloseClick() {
+      ws.close();
+    }
+    
+    function output(str) {
+      var log = document.getElementById("log");
+      var escaped = str.replace(/&/, "&amp;").replace(/</, "&lt;").
+        replace(/>/, "&gt;").replace(/"/, "&quot;"); // "
+      log.innerHTML = escaped + "<br>" + log.innerHTML;
+    }
+    function outputcookie(x,str) {
+	 var r=str.split(";");
+	 var s=r[0]+" ";
+
+	 // field
+	 // 0 time
+	 // 1 feed
+	 // 2 signal
+	 // 3 value
+	 var f=r[1];
+	 switch (f) {
+	  case '1':
+	   s+="("+f+") alive package";
+	   s+=" value "+r[3];
+	   break;
+	  case '2':
+	   s+="("+f+") battery";
+	   s+=" value "+r[3];
+	   break;
+	  case '3':
+	   s+="("+f+") motion";
+	   s+=" value "+r[3];
+	   break;
+	  case '4':
+	   s+="("+f+") door";
+	   s+=" value "+r[3];
+	   break;
+	  case '5':
+	   s+="("+f+") temperature";
+	   s+=" value "+r[3];
+//T(°C) = (T(°F) - 32) / 1.8
+       var far=r[3]/100;
+	   var cen=(far-32)/1.8;
+	   s+= "   "+cen.toFixed(2)+"gradi celsius";   
+	   break;
+	  default:
+	   s+="("+f+") feed_type";
+	   s+=" value "+r[3];
+	   break;
+	 }
+	 s+="  signal "+r[2];
+//26-03-2018 15:09:48.333000;feed;1;signal;-42;value;2;
+      var log = document.getElementById("cookie"+x);
+/*      var escaped = str.replace(/&/, "&amp;").replace(/</, "&lt;").
+        replace(/>/, "&gt;").replace(/"/, "&quot;"); // "
+		*/
+	  escaped=s;
+      log.innerHTML = escaped + "<br>" + log.innerHTML;
+    }
+
+  </script>
+</head>
+<body onload="init();">
+<div class='_all'>
+  <div class='_dataa'>
+  <form onsubmit="onSubmit(); return false;">
+    <input type="text" id="input" size='50'>
+    <input class='_b' type="submit" value="Send">
+    <button class='_b' onclick="onCloseClick(); return false;">close</button>
+  </form>
+  </div>
+  <div class='_datab'>
+    RightLed<input type="text" id="rightLed" size='15' value='60,100,240'>
+    LeftLed<input type="text" id="leftLed" size='15' value='60,100,240'>
+    <button class='_b' onclick="onSubmitb(100); return false;">apply</button>
+<!--     Token<input type="text" id="token" size='30' value='krtnulohx3achbfmyp3wncrb0ignppk1'>
+    <button class='_b' onclick="onSubmitb(110); return false;">apply</button> -->
+  </div>
+  <div id="datalog" class='_log'><div class='_title'>LOG</div><div id="log"></div></div>
+  <div class='_title'>ONE</div><div id="cookie1" class='_cookie'></div>
+  <div class='_title'>TWO</div><div id="cookie2" class='_cookie'></div>
+  <div class='_title'>THREE</div><div id="cookie3" class='_cookie'></div>
+  <div class='_title'>FOUR</div><div id="cookie4" class='_cookie'></div>
+<!-- 
+  <div>Mother simulation client 1
+    <button class='_b' onclick="onSubmitb(1); return false;">1</button>
+    <button class='_b' onclick="onSubmitb(2); return false;">2</button>
+    <button class='_b' onclick="onSubmitb(3); return false;">3</button>
+    <button class='_b' onclick="onSubmitb(4); return false;">4</button>	
+    <button class='_b' onclick="onSubmitb(5); return false;">5</button>	
+    <button class='_b' onclick="onSubmitb(6); return false;">6</button>	
+    <button class='_b' onclick="onSubmitb(7); return false;">7</button>	
+    <button class='_b' onclick="onSubmitb(8); return false;">8</button>	
+    <button class='_b' onclick="onSubmitb(9); return false;">wakeup</button>	
+    <button class='_b' onclick="onSubmitb(10); return false;">sleep</button>	
+    <button class='_b' onclick="onSubmitb(11); return false;">cookie A</button>	
+    <button class='_b' onclick="onSubmitb(12); return false;">cookie B</button>	
+    <button class='_b' onclick="onSubmitb(13); return false;">cookie C</button>	
+    <button class='_b' onclick="onSubmitb(14); return false;">cookie D</button>	
+  </div>
+-->
+</div>
+</body>
+</html>
