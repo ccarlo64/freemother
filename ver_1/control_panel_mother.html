@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple client</title>
+  <style>
+  .blackScreen {position:fixed;top:0;left:0;background: #000;opacity: .5;z-index:100;height:100%;width:100%;}
+ 
+	a { text-decoration: none;}
+	a:visited { color:black; }
+	a:hover { background-color:silver; }
+
+  ._btn {display:flex;}
+  ._set {background-color:silver;padding: 10px;} 
+  ._get {background-color:white;padding: 4px;width: 100%;}
+  ._titledash {background-color:#d66e6e;text-align: center;padding: 10px;margin: 4px;color:white;box-shadow: 2px 2px 2px black;font-weight: bold;font-weight: bold;font-size: x-large;}
+  ._titlenode {display: flex;}
+  ._allnode {height:78%;background-color:white;}
+  ._node {float: left;width: 48%;margin: 8px;}
+  ._name {padding:8px;background-color:#d66e6e;box-shadow:2px 2px 2px black;}
+  ._name:hover {cursor:pointer;}
+  ._all {}
+  ._dataa {background-color: white;overflow:auto;margin: 4px;float:left;}
+  ._datab {background-color: white;overflow:auto;margin: 4px;}
+  ._command {box-shadow: 2px 2px 2px black;background-color: #d3e9e9;overflow:auto;margin: 4px; display:block}
+  ._log {box-shadow: 2px 2px 2px black;background-color: #d3e9e9;overflow:auto;margin: 4px; display:none;}
+  ._cookie {height:12%;background-color: #f2f2f2;overflow:auto;margin: 4px;} 
+  ._title {background-color:silver;padding: 2px;margin: 4px;text-align:center;}
+  ._b {padding: 0 10px 0 10px;}
+  #tb {margin-right:auto;margin-left:auto;width: 100%;}
+  #tb tr {box-shadow: 2px 2px 2px black;}
+  #tb td {padding: 6px;}
+  #history {padding: 20px;}
+  ._body {font-family:monospace;}
+  ._info {text-align:center;display:none;position: absolute;left: 30%;width: 40%;top: 100px;z-index: 101;box-shadow: 2px 2px 2px black;background-color: #f0eaea;}
+  ._close {text-align:center;}
+  ._close:hover {cursor:pointer;}
+  </style>
+  <script type="text/javascript">
+    var log=false;
+    var ws;
+    var mac="MO0004A3F9B33B";    
+	var nodi=[];
+    function init() {
+
+      // Connect to Web Socket
+//      ws = new WebSocket("ws://localhost:9001/");
+      ws = new WebSocket("ws://192.168.1.159:9001");
+      //ws = new WebSocket("ws://192.168.0.1:80");
+//      ws = new WebSocket("ws://in.sen.se/websocket");
+
+      // Set event handlers.
+      ws.onopen = function() {
+        output("onopen");
+		onSubmitb( 0 );
+      };
+      
+      ws.onmessage = function(e) {
+        output("onmessage: " + e.data);
+		var j=JSON.parse(e.data);
+		var resource=j.resource;
+		if(resource=='command') {
+		  if(j.method=='post' && j.type=='name') {
+		    nodi=j.body;
+            console.log(j.body);
+            var ndiv = document.getElementById("ndiv");
+            var s='';
+		    for (i = 0; i < nodi.length; i++) {
+//		     s=s+"<div class='_node' id='"+nodi[i]+"'><div class='_titlenode'>"+nodi[i]+"</div><div class='_set'>SET</div><div class='_get'>GET</div></div>";
+			 //<div class='_btn'>
+			 // style='padding:8px;background-color:#dcfed4;border-radius:10px;'
+		     s=s+"<div class='_node'><div class='_titlenode'><a href='' class='_name' onclick='onSubmitb(1,\""+nodi[i].node+"\");return false;'>"+nodi[i].node+"</span>";
+            // s=s+"<button class='_set'>SET</button>";
+             //s=s+"<a class='_get' onclick='onSubmitb(1,\""+nodi[i].node+"\");'>Get info</a></div>";
+             //s=s+"<span id='"+nodi[i].node+"'></span>";			 
+			 s=s+"</div>";
+             s=s+"<table id='tb'>"+
+             "<tr><td>temperature</td>"+
+             "<td id='TD"+nodi[i].node+"'></td>"+
+             "<td id='TT"+nodi[i].node+"'></td>"+
+             "<td id='TS"+nodi[i].node+"'></td><td><a href='' class='_get' onclick='history(\""+nodi[i].node+"\",\"5\");return false;'>history</a></td></tr>"+
+             "<tr><td>battery</td>"+
+             "<td id='BD"+nodi[i].node+"'></td>"+
+             "<td id='BT"+nodi[i].node+"'></td>"+
+             "<td id='BS"+nodi[i].node+"'></td><td><a href='' class='_get' onclick='history(\""+nodi[i].node+"\",\"2\");return false;'>history</a></td></tr>"+
+             "<tr><td>move</td>"+
+             "<td id='MD"+nodi[i].node+"'></td>"+
+             "<td id='MT"+nodi[i].node+"'></td>"+
+             "<td id='MS"+nodi[i].node+"'></td><td><a href='' class='_get' onclick='history(\""+nodi[i].node+"\",\"3\");return false;'>history</a></td></tr>"+
+             "<tr><td>door</td>"+
+             "<td id='DD"+nodi[i].node+"'></td>"+
+             "<td id='DT"+nodi[i].node+"'></td>"+
+             "<td id='DS"+nodi[i].node+"'></td><td><a href='' class='_get' onclick='history(\""+nodi[i].node+"\",\"4\");return false;'>history</a></td></tr>"+
+             "</table>";			 
+             s=s+"</div>";			 
+           }
+		   ndiv.innerHTML=s;
+		   }
+		  if(j.method=='post' && j.type=='info') {
+		    nodi=j.body;
+            console.log(j.body);
+			var idn=j.body[0].node;
+            //alert(nodi[0].signal);
+            var ndiv = document.getElementById(idn);
+            var s='';
+            var i=0;
+		    //for (i = 0; i < nodi.length; i++) {
+//		     s="temperature "+nodi[i].value+" signal "+nodi[i].signal;	 
+
+            if(nodi[i].feed_type=='5') {
+              document.getElementById('TD'+idn).innerHTML=nodi[i].date;
+              document.getElementById('TT'+idn).innerHTML=nodi[i].value;
+              document.getElementById('TS'+idn).innerHTML=nodi[i].signal;
+             }
+            if(nodi[i].feed_type=='2'){
+              document.getElementById('BD'+idn).innerHTML=nodi[i].date;
+              document.getElementById('BT'+idn).innerHTML=nodi[i].value;
+              document.getElementById('BS'+idn).innerHTML=nodi[i].signal;
+             }
+            if(nodi[i].feed_type=='3'){
+              document.getElementById('MD'+idn).innerHTML=nodi[i].date;
+              document.getElementById('MT'+idn).innerHTML=nodi[i].value;
+              document.getElementById('MS'+idn).innerHTML=nodi[i].signal;
+             }
+            /*if(nodi[i].feed_type=='4'){
+              document.getElementById('DD'+idn).innerHTML=nodi[i].date;
+              document.getElementById('DT'+idn).innerHTML=nodi[i].value;
+              document.getElementById('DS'+idn).innerHTML=nodi[i].signal;
+             }*/
+             //ndiv.innerHTML=s;
+		   }
+		  if(j.method=='post' && j.type=='history') {
+		    nodi=j.body;
+            console.log(j.body);
+			var idn=j.body[0].node;
+            //alert(nodi[0].signal);
+            var ndiv = document.getElementById(idn);
+            var s='';
+            var i=0;
+			
+             s="<table id='tb'>"+
+             "<tr><th>feed_type</th>"+
+             "<th>date</th>"+
+             "<th>value</th>"+
+             "<th>signal</th>"+
+             "</tr>";
+		    for (i = 0; i < nodi.length; i++) {
+		     //s=s+"<br /> "+nodi[i].feed_type+" "+nodi[i].date+" "+nodi[i].value+" signal "+nodi[i].signal;	 
+             s=s+"<tr><td>"+nodi[i].feed_type+"</td>"+
+             "<td>"+nodi[i].date+"</td>"+
+             "<td>"+nodi[i].value+"</td>"+
+             "<td>"+nodi[i].signal+"</td>"+
+			 "</tr>";
+           }
+		   s=s+"</table>";				
+
+		   document.getElementById('history').innerHTML=s;
+		}
+        }
+      };
+      
+      ws.onclose = function() {
+        output("onclose");
+      };
+
+      ws.onerror = function(e) {
+        output("onerror");
+        console.log(e)
+      };
+
+    }
+    
+    function onSubmit() {
+      var input = document.getElementById("input");
+      // You can send message to the Web Socket using ws.send.
+      ws.send(input.value);
+      output("send: " + input.value);
+      input.value = "";
+      input.focus();
+    }
+    function onSubmitb( b,n='',f=0 ) {
+	  var d = new Date();
+	  var dt = d.getFullYear()+"-"+ 
+	  ('0' +d.getMonth()).slice(-2) +"-"+
+	  ('0' +d.getDate()).slice(-2)+" "+
+	  ('0' +d.getHours()).slice(-2)+":"+
+	  ('0' +d.getMinutes()).slice(-2)+":"+
+	  ('0' +d.getSeconds()).slice(-2);
+
+      var value='';
+	  var value1='';
+	  switch (b) {
+	  case 0:
+	   value='{"resource" : "command", "method":"get","type":"name","body" : {"node":"all"}}'; break;      
+	  case 1:
+	   value='{"resource" : "command", "method" : "get", "type" : "info", "body" : {"node" : "'+n+'"}}'; break;
+	  case 2:
+	   value='{"resource" : "command", "method" : "get", "type" : "history", "body" : {"node" : "'+n+'","feed_type":"'+f+'"}}'; break;       
+	  case 100:
+       value='{"body": 0, "type": "gateway", "resource": "mute", "method": "post", "auth": "'+mac+'"}';break;
+	   //value='{"resource" : "events", "method" : "post", "body" : [{"timestamp" : "'+dt+'", "feed_type" : "6", "value" : "119"}]}'; break;
+	  case 101:
+       value='{"body": 1, "type": "gateway", "resource": "mute", "method": "post", "auth": "'+mac+'"}';break;
+	   //value='{"resource" : "events", "method" : "post", "body" : [{"timestamp" : "'+dt+'", "feed_type" : "6", "value" : "5000"}]}';
+	   //value1='{"resource" : "events", "method" : "post", "body" : [{"timestamp" : "'+dt+'", "feed_type" : "6", "value" : "5527"}]}'; break;         
+	  case 102:
+       var rl = document.getElementById("rightLed").value;	  
+       var ll = document.getElementById("leftLed").value;	  
+	   value='{"body": {"smileLed": "0,255,0", "rightLed": "'+rl+'",  "leftLed": "'+ll+'"}, "type": "gateway", "resource": "state", "method": "post", "auth": "'+mac+'"}'; break;  
+	  default:
+	   break;
+	  }
+      ws.send(value);
+      output("send: " + value);	  
+	  if (value1!=''){
+	    ws.send(value1);
+        output("send: " + value1);
+	  }
+    }
+
+    function onCloseClick() {
+      ws.close();
+    }
+    
+    function output(str) {
+	  if (log) {
+       var vlog = document.getElementById("log");
+       var escaped = str.replace(/&/, "&amp;").replace(/</, "&lt;").
+        replace(/>/, "&gt;").replace(/"/, "&quot;"); // "
+       vlog.innerHTML = escaped + "<br>" + vlog.innerHTML;
+	  }
+    }
+    function history(n,f) {
+      onSubmitb(2,n,f);
+      var id = document.getElementById('info');
+	  waitwait(1);
+      id.style.display='block';
+    }
+    function closeHistory() {
+      var id = document.getElementById('info');
+      id.style.display='none';
+	  waitwait(0);
+    }
+
+	function waitwait( z ) {
+	   if (z==0) {
+		dimmer = document.getElementById("demoid");
+		document.body.removeChild(dimmer); 
+	  } else {    
+		att=document.createAttribute("id");
+		att.value="demoid"; 
+		var dimmer = document.createElement("div");
+		dimmer.setAttributeNode(att);
+		dimmer.className = 'blackScreen';
+		document.body.appendChild(dimmer);
+	  }
+	}  	
+    function logYesNo() {
+	  log=!log;
+	  if (log)
+	   document.getElementById("datalog").style.display='block';
+	  else
+	   document.getElementById("datalog").style.display='none';	  
+	}
+  </script>
+</head>
+<body class='_body' onload="init();">
+<div class='_all'>
+  <div class='_titledash'>MOTHER CONTROL PANEL</div>
+  <div class='_allnode' id='ndiv'></div>
+  <div style='clear:both;'></div>
+  <div id="command" class='_command'><div class='_title'>COMMAND</div>
+  <div>
+   <button class='_b' onclick="logYesNo(); return false;">log</button>
+   &nbsp&nbsp
+   <button class='_b' onclick="onSubmitb(101); return false;">sleep</button>
+   <button class='_b' onclick="onSubmitb(100); return false;">wakeup</button>
+   &nbsp&nbsp
+   RightLed<select id='rightLed'>
+   <option value='60,100,240' selected>default</option>
+   <option value='255,255,0'>yellow</option>
+   <option value='255,0,0'>red</option>
+   <option value='255,0,255'>violet</option>
+   <option value='0,255,255'>cian</option>
+   <option value='0,255,0'>green</option>
+   <option value='0,0,255'>blue</option>
+   <option value='255,255,255'>white</option>
+   <option value='0,0,0'>black</option>     
+   </select>
+   <button class='_b' onclick="onSubmitb(102); return false;">eyes</button>
+   LeftLed<select id='leftLed'>
+   <option value='60,100,240' selected>default</option>
+   <option value='255,255,0'>yellow</option>
+   <option value='255,0,0'>red</option>
+   <option value='255,0,255'>violet</option>
+   <option value='0,255,255'>cian</option>
+   <option value='0,255,0'>green</option>
+   <option value='0,0,255'>blue</option>
+   <option value='255,255,255'>white</option>
+   <option value='0,0,0'>black</option>  
+   </select>
+  </div>
+  </div>
+  <div style='clear:both;'></div>
+  <div id="datalog" class='_log'><div class='_title'>LOG</div><div id="log"></div></div>  
+</div>
+<div id='info' class='_info'><div style='text-align:right;'><a href='' class='_close' onclick='closeHistory();return false;'>close</a></div><div id='history'></div></div>
+</body>
+</html>
